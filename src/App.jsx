@@ -35,7 +35,10 @@ export default function App() {
     setLoading(false)
   }, [])
 
-  useEffect(() => { fetchClients() }, [fetchClients])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchClients()
+  }, [fetchClients])
 
   const handleSave = async (formData) => {
     if (editingClient) {
@@ -105,6 +108,7 @@ export default function App() {
 
       {modalOpen && (
         <ClientModal
+          key={editingClient?.id ?? 'new-client'}
           client={editingClient}
           onClose={() => { setModalOpen(false); setEditingClient(null) }}
           onSave={handleSave}

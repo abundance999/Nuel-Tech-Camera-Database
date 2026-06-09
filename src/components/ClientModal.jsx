@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 
 function Field({ label, required, children }) {
   return (
-    <div style={{ marginBottom: 14 }}>
+    <div style={{ marginBottom: 14, transition: 'opacity 0.25s ease, transform 0.25s ease' }}>
       <label style={{ display: 'block', fontSize: 12, color: 'var(--text2)', marginBottom: 5 }}>
         {label} {required && <span style={{ color: '#f87171' }}>*</span>}
       </label>
@@ -21,7 +21,7 @@ const inputStyle = {
   color: 'var(--text)',
   outline: 'none',
   fontFamily: 'var(--font)',
-  transition: 'border-color 0.15s',
+  transition: 'background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
 }
 
 function Input({ type = 'text', placeholder, value, onChange, min }) {
@@ -52,6 +52,7 @@ function AddMoreBtn({ onClick, label }) {
         color: '#60a5fa', fontSize: 13, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
         fontFamily: 'var(--font)', marginTop: 2,
+        transition: 'background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease',
       }}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -66,7 +67,7 @@ function RemoveBtn({ onClick }) {
   return (
     <button
       onClick={onClick}
-      style={{ background: 'var(--red-soft)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, padding: '2px 8px', color: '#f87171', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)' }}
+      style={{ background: 'var(--red-soft)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, padding: '2px 8px', color: '#f87171', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', transition: 'background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease' }}
     >
       Remove
     </button>
@@ -78,6 +79,7 @@ function InstallerRow({ value, index, onChange, onRemove, showRemove }) {
     <div style={{
       background: 'var(--bg3)', border: '1px solid var(--border)',
       borderRadius: 10, padding: '11px 12px', marginBottom: 8,
+      transition: 'background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <span style={{ fontSize: 12, color: 'var(--text3)', fontFamily: 'var(--mono)' }}>Installer {index + 1}</span>
@@ -101,6 +103,7 @@ function SimRow({ sim, index, onChange, onRemove, showRemove }) {
     <div style={{
       background: 'var(--bg3)', border: '1px solid var(--border)',
       borderRadius: 10, padding: '11px 12px', marginBottom: 8,
+      transition: 'background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 9 }}>
         <span style={{ fontSize: 12, color: 'var(--text3)', fontFamily: 'var(--mono)' }}>SIM {index + 1}</span>
@@ -145,37 +148,45 @@ const EMPTY_SIM = () => ({ number: '', network: '' })
 const EMPTY = { date: '', name: '', contact: '', location: '', cameras: '', system: '', username: '', password: '' }
 
 export default function ClientModal({ client, onClose, onSave }) {
-  const [form, setForm] = useState(EMPTY)
-  const [installers, setInstallers] = useState([''])
-  const [sims, setSims] = useState([EMPTY_SIM()])
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
+  const [form, setForm] = useState(() => client ? {
+    date: client.date || '',
+    name: client.name || '',
+    contact: client.contact || '',
+    location: client.location || '',
+    cameras: client.cameras || '',
+    system: client.system || '',
+    username: client.username || '',
+    password: client.password || '',
+  } : { ...EMPTY, date: new Date().toISOString().split('T')[0] })
+  const [installers, setInstallers] = useState(() => {
     if (client) {
-      setForm({
-        date: client.date || '',
-        name: client.name || '',
-        contact: client.contact || '',
-        location: client.location || '',
-        cameras: client.cameras || '',
-        system: client.system || '',
-        username: client.username || '',
-        password: client.password || '',
-      })
-      const loadedInstallers = Array.isArray(client.installers) && client.installers.length > 0
+      return Array.isArray(client.installers) && client.installers.length > 0
         ? client.installers
         : (client.installer ? [client.installer] : [''])
-      setInstallers(loadedInstallers)
-      const loadedSims = Array.isArray(client.sims) && client.sims.length > 0
-        ? client.sims : [EMPTY_SIM()]
-      setSims(loadedSims)
-    } else {
-      setForm({ ...EMPTY, date: new Date().toISOString().split('T')[0] })
-      setInstallers([''])
-      setSims([EMPTY_SIM()])
     }
-  }, [client])
+    return ['']
+  })
+  const [sims, setSims] = useState(() => client ? (
+    Array.isArray(client.sims) && client.sims.length > 0 ? client.sims : [EMPTY_SIM()]
+  ) : [EMPTY_SIM()])
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [mounted, setMounted] = useState(false)
+  const [exiting, setExiting] = useState(false)
+
+  useEffect(() => {
+    requestAnimationFrame(() => setMounted(true))
+    return () => setMounted(false)
+  }, [])
+
+  const closeModal = () => {
+    if (exiting) return
+    setExiting(true)
+    window.setTimeout(() => {
+      onClose()
+    }, 250)
+  }
+
 
   const set = field => e => setForm(f => ({ ...f, [field]: e.target.value }))
 
@@ -208,12 +219,12 @@ export default function ClientModal({ client, onClose, onSave }) {
       sims: cleanSims,
     })
     setSaving(false)
-    if (success) onClose()
+    if (success) closeModal()
   }
 
   return (
     <div
-      onClick={e => e.target === e.currentTarget && onClose()}
+      onClick={e => e.target === e.currentTarget && closeModal()}
       style={{
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
         zIndex: 300, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
@@ -223,6 +234,10 @@ export default function ClientModal({ client, onClose, onSave }) {
         background: 'var(--bg2)', borderRadius: '16px 16px 0 0',
         maxHeight: '92vh', display: 'flex', flexDirection: 'column',
         border: '1px solid var(--border2)', borderBottom: 'none',
+        opacity: mounted && !exiting ? 1 : 0,
+        transform: mounted && !exiting ? 'translateY(0)' : 'translateY(30px)',
+        transition: 'opacity 0.25s ease, transform 0.25s ease',
+        pointerEvents: exiting ? 'none' : 'auto',
       }}>
         {/* Handle */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
@@ -240,13 +255,13 @@ export default function ClientModal({ client, onClose, onSave }) {
               {client ? 'Update the fields below' : 'Fill in the installation details'}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'var(--bg4)', border: '1px solid var(--border2)', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text2)' }}>
+          <button onClick={closeModal} style={{ background: 'var(--bg4)', border: '1px solid var(--border2)', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text2)' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
 
         {/* Body */}
-        <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
+        <div style={{ padding: '16px', overflowY: 'auto', flex: 1, transition: 'opacity 0.25s ease, transform 0.25s ease' }}>
 
           {/* Optional fields */}
           <div style={{ marginBottom: 6 }}>

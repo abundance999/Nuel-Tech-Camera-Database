@@ -29,7 +29,7 @@ function Row({ label, value, mono, icon }) {
         {icon}{label}
       </span>
       <span style={{
-        fontSize: 13, textAlign: 'right', wordBreak: 'break-all',
+        textAlign: 'right', wordBreak: 'break-all',
         fontFamily: mono ? 'var(--mono)' : 'var(--font)',
         fontSize: mono ? 12 : 13,
         color: value && value !== '—' ? 'var(--text)' : 'var(--text3)',
@@ -120,8 +120,16 @@ export default function ClientCard({ client, onEdit, onDelete }) {
       </div>
 
       {/* Expanded Detail */}
-      {open && (
-        <div style={{ borderTop: '1px solid var(--border)', padding: '12px 14px', background: 'var(--bg3)' }}>
+      <div style={{
+        borderTop: open ? '1px solid var(--border)' : 'none',
+        padding: open ? '12px 14px' : '0 14px',
+        background: 'var(--bg3)',
+        maxHeight: open ? '1200px' : 0,
+        opacity: open ? 1 : 0,
+        overflow: 'hidden',
+        transition: 'opacity 0.25s ease, max-height 0.25s ease, padding 0.25s ease, border-top 0.25s ease',
+      }}>
+        <div style={{ display: open ? 'block' : 'none' }}>
           <Row label="Contact" value={client.contact} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.7 12.28 19.79 19.79 0 0 1 1.65 3.7 2 2 0 0 1 3.62 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.06a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 16.5z"/></svg>} />
           {/* Installers */}
           {(() => {
@@ -230,7 +238,7 @@ export default function ClientCard({ client, onEdit, onDelete }) {
             )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
