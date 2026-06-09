@@ -24,11 +24,20 @@ const inputStyle = {
   transition: 'background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
 }
 
-function Input({ type = 'text', placeholder, value, onChange, min }) {
+function Input({ type = 'text', placeholder, value, onChange, min, disabled }) {
   return (
     <input
-      type={type} placeholder={placeholder} value={value} onChange={onChange} min={min}
-      style={inputStyle}
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      min={min}
+      disabled={disabled}
+      style={{
+        ...inputStyle,
+        opacity: disabled ? 0.65 : 1,
+        cursor: disabled ? 'not-allowed' : 'text',
+      }}
       onFocus={e => e.target.style.borderColor = 'rgba(37,99,235,0.5)'}
       onBlur={e => e.target.style.borderColor = 'var(--border2)'}
     />
@@ -147,7 +156,7 @@ function SimRow({ sim, index, onChange, onRemove, showRemove }) {
 const EMPTY_SIM = () => ({ number: '', network: '' })
 const EMPTY = { date: '', name: '', contact: '', location: '', cameras: '', system: '', username: '', password: '' }
 
-export default function ClientModal({ client, onClose, onSave }) {
+export default function ClientModal({ client, onClose, onSave, isAdmin }) {
   const [form, setForm] = useState(() => client ? {
     date: client.date || '',
     name: client.name || '',
@@ -170,6 +179,10 @@ export default function ClientModal({ client, onClose, onSave }) {
     Array.isArray(client.sims) && client.sims.length > 0 ? client.sims : [EMPTY_SIM()]
   ) : [EMPTY_SIM()])
   const [saving, setSaving] = useState(false)
+  const publicAdd = !isAdmin && !client
+  const canEditName = isAdmin
+  const canEditContact = isAdmin
+  const canEditCredentials = isAdmin || !client
   const [error, setError] = useState('')
   const [mounted, setMounted] = useState(false)
   const [exiting, setExiting] = useState(false)
@@ -272,14 +285,28 @@ export default function ClientModal({ client, onClose, onSave }) {
             <Field label="Date">
               <Input type="date" value={form.date} onChange={set('date')} />
             </Field>
-            <Field label="Client Name">
-              <Input placeholder="Name or business" value={form.name} onChange={set('name')} />
-            </Field>
+            {(!publicAdd || isAdmin) && (
+              <Field label="Client Name">
+                <Input
+                  placeholder="Name or business"
+                  value={form.name}
+                  onChange={set('name')}
+                  disabled={!canEditName}
+                />
+              </Field>
+            )}
           </div>
 
-          <Field label="Client Contact">
-            <Input placeholder="Phone number or email" value={form.contact} onChange={set('contact')} />
-          </Field>
+          {(!publicAdd || isAdmin) && (
+            <Field label="Client Contact">
+              <Input
+                placeholder="Phone number or email"
+                value={form.contact}
+                onChange={set('contact')}
+                disabled={!canEditContact}
+              />
+            </Field>
+          )}
 
           {/* Required fields */}
           <div style={{ marginBottom: 6, marginTop: 4 }}>
@@ -322,10 +349,20 @@ export default function ClientModal({ client, onClose, onSave }) {
           {/* Credentials */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
             <Field label="Username" required>
-              <Input placeholder="DVR username" value={form.username} onChange={set('username')} />
+              <Input
+                placeholder="DVR username"
+                value={form.username}
+                onChange={set('username')}
+                disabled={!canEditCredentials}
+              />
             </Field>
             <Field label="Password" required>
-              <Input placeholder="DVR password" value={form.password} onChange={set('password')} />
+              <Input
+                placeholder="DVR password"
+                value={form.password}
+                onChange={set('password')}
+                disabled={!canEditCredentials}
+              />
             </Field>
           </div>
 

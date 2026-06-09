@@ -40,10 +40,12 @@ function Row({ label, value, mono, icon }) {
   )
 }
 
-export default function ClientCard({ client, onEdit, onDelete }) {
+export default function ClientCard({ client, onEdit, onDelete, isAdmin }) {
   const [open, setOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [bg, fg] = avatarColor(client.name)
+  const displayName = isAdmin ? (client.name || '—') : (client.name ? 'Private record' : '—')
+  const initialsText = isAdmin ? initials(client.name) : 'GU'
 
   return (
     <div style={{
@@ -65,11 +67,11 @@ export default function ClientCard({ client, onEdit, onDelete }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 13, fontWeight: 600, flexShrink: 0, fontFamily: 'var(--mono)',
         }}>
-          {initials(client.name)}
+          {initialsText}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {client.name || '—'}
+            {displayName}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -130,7 +132,9 @@ export default function ClientCard({ client, onEdit, onDelete }) {
         transition: 'opacity 0.25s ease, max-height 0.25s ease, padding 0.25s ease, border-top 0.25s ease',
       }}>
         <div style={{ display: open ? 'block' : 'none' }}>
-          <Row label="Contact" value={client.contact} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.7 12.28 19.79 19.79 0 0 1 1.65 3.7 2 2 0 0 1 3.62 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.06a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 16.5z"/></svg>} />
+          {isAdmin && (
+            <Row label="Contact" value={client.contact} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.7 12.28 19.79 19.79 0 0 1 1.65 3.7 2 2 0 0 1 3.62 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.06a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 16.5z"/></svg>} />
+          )}
           {/* Installers */}
           {(() => {
             const instList = Array.isArray(client.installers) ? client.installers.filter(Boolean) : (client.installer ? [client.installer] : [])
@@ -206,7 +210,7 @@ export default function ClientCard({ client, onEdit, onDelete }) {
               </svg>
               Edit
             </button>
-            {!confirmDelete ? (
+            {isAdmin && (!confirmDelete ? (
               <button
                 onClick={() => setConfirmDelete(true)}
                 style={{
@@ -235,7 +239,7 @@ export default function ClientCard({ client, onEdit, onDelete }) {
                   Cancel
                 </button>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
