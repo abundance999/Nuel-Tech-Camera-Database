@@ -38,7 +38,7 @@ export default function AdminManager({ admins, loading, onAdd, onRemove }) {
           <button
             onClick={handleAdd}
             disabled={saving}
-            style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontWeight: 600 }}
+            style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%)', color: '#fff', cursor: 'pointer', fontWeight: 700, whiteSpace: 'nowrap', boxShadow: '0 2px 10px rgba(38,168,61,0.3)' }}
           >
             {saving ? 'Saving...' : 'Add'}
           </button>

@@ -8,7 +8,7 @@ create table if not exists public.admin_users (
   email text not null unique,
   created_at timestamp with time zone default now()
 );
-
+ 
 alter table public.clients enable row level security;
 
 drop policy if exists "Public select clients" on public.clients;

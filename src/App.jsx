@@ -278,46 +278,47 @@ export default function App() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', maxWidth: 480, margin: '0 auto' }}>
       <Header count={clients.length} />
 
-      <div style={{ display: 'flex', gap: 10, padding: '12px 14px', background: 'var(--bg2)', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', gap: 8, padding: '10px 14px', background: 'var(--bg2)', borderBottom: '1px solid var(--border)' }}>
         <button
           onClick={() => setMode('public')}
           style={{
-            flex: 1,
-            padding: '10px 14px',
-            borderRadius: 10,
-            border: mode === 'public' ? '1px solid var(--accent)' : '1px solid var(--border2)',
-            background: mode === 'public' ? 'rgba(37,99,235,0.12)' : 'var(--bg3)',
-            color: mode === 'public' ? '#60a5fa' : 'var(--text2)',
-            cursor: 'pointer',
-            fontFamily: 'var(--font)',
-            fontWeight: mode === 'public' ? 600 : 500,
+            flex: 1, padding: '9px 14px', borderRadius: 9,
+            border: mode === 'public' ? '1px solid rgba(38,168,61,0.5)' : '1px solid var(--border2)',
+            background: mode === 'public' ? 'rgba(38,168,61,0.12)' : 'var(--bg3)',
+            color: mode === 'public' ? '#4ade6e' : 'var(--text2)',
+            cursor: 'pointer', fontFamily: 'var(--font)',
+            fontWeight: mode === 'public' ? 600 : 400, fontSize: 13,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}
         >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           Public
         </button>
         <button
           onClick={() => setMode('admin')}
           style={{
-            flex: 1,
-            padding: '10px 14px',
-            borderRadius: 10,
-            border: mode === 'admin' ? '1px solid var(--accent)' : '1px solid var(--border2)',
-            background: mode === 'admin' ? 'rgba(37,99,235,0.12)' : 'var(--bg3)',
-            color: mode === 'admin' ? '#60a5fa' : 'var(--text2)',
-            cursor: 'pointer',
-            fontFamily: 'var(--font)',
-            fontWeight: mode === 'admin' ? 600 : 500,
+            flex: 1, padding: '9px 14px', borderRadius: 9,
+            border: mode === 'admin' ? '1px solid rgba(38,168,61,0.5)' : '1px solid var(--border2)',
+            background: mode === 'admin' ? 'rgba(38,168,61,0.12)' : 'var(--bg3)',
+            color: mode === 'admin' ? '#4ade6e' : 'var(--text2)',
+            cursor: 'pointer', fontFamily: 'var(--font)',
+            fontWeight: mode === 'admin' ? 600 : 400, fontSize: 13,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}
         >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           Admin
         </button>
       </div>
 
       {mode === 'admin' && isAdmin && (
         <>
-          <div style={{ padding: '10px 14px', background: 'var(--bg3)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#60a5fa', fontSize: 13 }}>Signed in as admin</span>
-            <button onClick={handleSignOut} style={{ background: 'none', border: '1px solid var(--border2)', borderRadius: 8, padding: '8px 12px', color: 'var(--text2)', cursor: 'pointer', fontFamily: 'var(--font)' }}>Sign Out</button>
+          <div style={{ padding: '10px 14px', background: 'rgba(38,168,61,0.08)', borderBottom: '1px solid rgba(38,168,61,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: '#4ade6e', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Signed in as admin
+            </span>
+            <button onClick={handleSignOut} style={{ background: 'none', border: '1px solid var(--border2)', borderRadius: 8, padding: '6px 12px', color: 'var(--text2)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12 }}>Sign Out</button>
           </div>
           <AdminManager
             admins={adminEmails}
@@ -333,31 +334,40 @@ export default function App() {
 
       <div style={{ flex: 1, padding: '12px 14px 90px' }}>
         {mode === 'admin' && !isAdmin ? (
-          <div style={{ padding: 20, background: 'var(--bg2)', borderRadius: 16, border: '1px solid var(--border)', margin: '0 14px' }}>
-            <h2 style={{ fontSize: 16, marginBottom: 12 }}>Admin Sign In</h2>
-            <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 16 }}>Enter admin credentials to access the full dashboard.</p>
+          <div style={{ padding: 20, background: 'var(--bg2)', borderRadius: 16, border: '1px solid var(--border)', margin: '0' }}>
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(34,47,89,0.6)', border: '1px solid rgba(34,47,89,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7aa4f0" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Admin Sign In</h2>
+              <p style={{ fontSize: 13, color: 'var(--text3)' }}>Enter your credentials to access the full dashboard.</p>
+            </div>
             <div style={{ display: 'grid', gap: 12 }}>
               <input
                 type="email"
                 placeholder="Admin email"
                 value={loginEmail}
                 onChange={e => setLoginEmail(e.target.value)}
-                style={{ width: '100%', padding: '11px 12px', borderRadius: 10, border: '1px solid var(--border2)', background: 'var(--bg3)', color: 'var(--text)' }}
+                style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '1px solid var(--border2)', background: 'var(--bg3)', color: 'var(--text)', fontFamily: 'var(--font)', fontSize: 14, outline: 'none' }}
+                onFocus={e => { e.target.style.borderColor = 'rgba(38,168,61,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(38,168,61,0.1)' }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border2)'; e.target.style.boxShadow = 'none' }}
               />
               <input
                 type="password"
                 placeholder="Password"
                 value={loginPassword}
                 onChange={e => setLoginPassword(e.target.value)}
-                style={{ width: '100%', padding: '11px 12px', borderRadius: 10, border: '1px solid var(--border2)', background: 'var(--bg3)', color: 'var(--text)' }}
+                style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '1px solid var(--border2)', background: 'var(--bg3)', color: 'var(--text)', fontFamily: 'var(--font)', fontSize: 14, outline: 'none' }}
+                onFocus={e => { e.target.style.borderColor = 'rgba(38,168,61,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(38,168,61,0.1)' }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border2)'; e.target.style.boxShadow = 'none' }}
               />
               <button
                 onClick={handleAdminSignIn}
-                style={{ padding: '12px', borderRadius: 10, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontWeight: 600 }}
+                style={{ padding: '12px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%)', color: '#fff', cursor: 'pointer', fontWeight: 700, fontFamily: 'var(--font)', fontSize: 15, boxShadow: '0 3px 12px rgba(38,168,61,0.35)' }}
               >
                 Sign In
               </button>
-              {loginError && <div style={{ color: '#f87171', fontSize: 13 }}>{loginError}</div>}
+              {loginError && <div style={{ color: '#f87171', fontSize: 13, textAlign: 'center', background: 'var(--red-soft)', padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(239,68,68,0.2)' }}>{loginError}</div>}
             </div>
           </div>
         ) : (

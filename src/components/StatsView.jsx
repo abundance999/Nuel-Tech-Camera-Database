@@ -1,11 +1,12 @@
-function StatCard({ label, value, accent }) {
+function StatCard({ label, value, color }) {
   return (
     <div style={{
       background: 'var(--bg2)', border: '1px solid var(--border)',
       borderRadius: 'var(--radius-lg)', padding: '14px 16px',
+      boxShadow: '0 1px 6px rgba(0,0,0,0.2)',
     }}>
-      <p style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</p>
-      <p style={{ fontSize: 28, fontWeight: 600, color: accent || 'var(--text)', fontFamily: 'var(--mono)' }}>{value}</p>
+      <p style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 500 }}>{label}</p>
+      <p style={{ fontSize: 30, fontWeight: 700, color: color || 'var(--text)', fontFamily: 'var(--mono)' }}>{value}</p>
     </div>
   )
 }
@@ -14,17 +15,17 @@ function GroupList({ title, data, color, softColor, borderColor }) {
   if (!data.length) return null
   return (
     <div style={{ marginBottom: 20 }}>
-      <p style={{ fontSize: 11, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, fontWeight: 500 }}>{title}</p>
+      <p style={{ fontSize: 11, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8, fontWeight: 600 }}>{title}</p>
       {data.map(([key, count]) => (
         <div key={key} style={{
           background: 'var(--bg2)', border: '1px solid var(--border)',
           borderRadius: 10, padding: '10px 14px', marginBottom: 7,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <span style={{ fontSize: 13 }}>{key}</span>
+          <span style={{ fontSize: 13, fontWeight: 500 }}>{key}</span>
           <span style={{
             background: softColor, color, border: `1px solid ${borderColor}`,
-            borderRadius: 20, fontSize: 11, padding: '2px 10px', fontFamily: 'var(--mono)',
+            borderRadius: 20, fontSize: 12, padding: '2px 12px', fontFamily: 'var(--mono)', fontWeight: 600,
           }}>
             {count}
           </span>
@@ -36,7 +37,6 @@ function GroupList({ title, data, color, softColor, borderColor }) {
 
 export default function StatsView({ clients, loading }) {
   if (loading) return null
-
   if (!clients.length) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text3)' }}>
@@ -58,18 +58,14 @@ export default function StatsView({ clients, loading }) {
   const installerMap = {}
   clients.forEach(c => {
     const list = Array.isArray(c.installers) ? c.installers : (c.installer ? [c.installer] : [])
-    list.filter(Boolean).forEach(name => {
-      installerMap[name] = (installerMap[name] || 0) + 1
-    })
+    list.filter(Boolean).forEach(name => { installerMap[name] = (installerMap[name] || 0) + 1 })
   })
   const installers = Object.entries(installerMap).sort((a, b) => b[1] - a[1])
 
   const networkMap = {}
   clients.forEach(c => {
     if (Array.isArray(c.sims)) {
-      c.sims.forEach(s => {
-        if (s.network) networkMap[s.network] = (networkMap[s.network] || 0) + 1
-      })
+      c.sims.forEach(s => { if (s.network) networkMap[s.network] = (networkMap[s.network] || 0) + 1 })
     }
   })
   const networks = Object.entries(networkMap).sort((a, b) => b[1] - a[1])
@@ -77,25 +73,16 @@ export default function StatsView({ clients, loading }) {
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
-        <StatCard label="Total Clients" value={clients.length} accent="#60a5fa" />
-        <StatCard label="Cams Installed" value={totalCams} accent="#34d399" />
+        <StatCard label="Total Clients" value={clients.length} color="#4ade6e" />
+        <StatCard label="Cams Installed" value={totalCams} color="#7aa4f0" />
       </div>
 
-      <GroupList
-        title="System Types"
-        data={systems}
-        color="#34d399" softColor="var(--green-soft)" borderColor="rgba(16,185,129,0.2)"
-      />
-      <GroupList
-        title="Installers"
-        data={installers}
-        color="#f59e0b" softColor="var(--amber-soft)" borderColor="rgba(245,158,11,0.2)"
-      />
-      <GroupList
-        title="SIM Networks"
-        data={networks}
-        color="#60a5fa" softColor="var(--accent-soft)" borderColor="rgba(37,99,235,0.2)"
-      />
+      <GroupList title="System Types" data={systems}
+        color="#4ade6e" softColor="rgba(38,168,61,0.12)" borderColor="rgba(38,168,61,0.3)" />
+      <GroupList title="Installers" data={installers}
+        color="#fbbf24" softColor="rgba(245,158,11,0.12)" borderColor="rgba(245,158,11,0.2)" />
+      <GroupList title="SIM Networks" data={networks}
+        color="#7aa4f0" softColor="rgba(34,47,89,0.5)" borderColor="rgba(34,47,89,0.7)" />
 
       <div style={{ height: 70 }} />
     </div>

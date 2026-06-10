@@ -38,8 +38,8 @@ function Input({ type = 'text', placeholder, value, onChange, min, disabled }) {
         opacity: disabled ? 0.65 : 1,
         cursor: disabled ? 'not-allowed' : 'text',
       }}
-      onFocus={e => e.target.style.borderColor = 'rgba(37,99,235,0.5)'}
-      onBlur={e => e.target.style.borderColor = 'var(--border2)'}
+      onFocus={e => { e.target.style.borderColor = 'rgba(38,168,61,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(38,168,61,0.1)' }}
+      onBlur={e => { e.target.style.borderColor = 'var(--border2)'; e.target.style.boxShadow = 'none' }}
     />
   )
 }
@@ -154,7 +154,7 @@ function SimRow({ sim, index, onChange, onRemove, showRemove }) {
 }
 
 const EMPTY_SIM = () => ({ number: '', network: '' })
-const EMPTY = { date: '', name: '', contact: '', location: '', cameras: '', system: '', username: '', password: '' }
+const EMPTY = { date: '', name: '', contact: '', location: '', cameras: '', system: '', subscription: '', username: '', password: '' }
 
 export default function ClientModal({ client, onClose, onSave, isAdmin }) {
   const [form, setForm] = useState(() => client ? {
@@ -164,6 +164,7 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
     location: client.location || '',
     cameras: client.cameras || '',
     system: client.system || '',
+    subscription: client.subscription || '',
     username: client.username || '',
     password: client.password || '',
   } : { ...EMPTY, date: new Date().toISOString().split('T')[0] })
@@ -228,6 +229,7 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
       name: form.name.trim(),
       location: form.location.trim(),
       cameras: form.cameras ? parseInt(form.cameras) : null,
+      subscription: form.subscription ? parseFloat(form.subscription) : null,
       installers: cleanInstallers,
       sims: cleanSims,
     })
@@ -326,6 +328,12 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
             </Field>
           </div>
 
+          {isAdmin && (
+            <Field label="Subscription amount">
+              <Input type="number" placeholder="e.g. 25000" value={form.subscription} onChange={set('subscription')} min="0" />
+            </Field>
+          )}
+
           {/* Installers */}
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -398,11 +406,12 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
             onClick={handleSubmit} disabled={saving}
             style={{
               width: '100%', padding: '13px',
-              background: saving ? 'var(--bg4)' : 'var(--accent)',
+              background: saving ? 'var(--bg4)' : 'linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%)',
               color: saving ? 'var(--text3)' : '#fff',
-              border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 500,
+              border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700,
               cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'var(--font)',
-              transition: 'background 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              boxShadow: saving ? 'none' : '0 3px 14px rgba(38,168,61,0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             }}
           >
             {saving ? (

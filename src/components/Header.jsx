@@ -1,44 +1,64 @@
 export default function Header({ count }) {
   return (
     <header style={{
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e2a45 100%)',
-      borderBottom: '1px solid rgba(37,99,235,0.2)',
-      padding: '18px 16px 14px',
+      background: 'linear-gradient(135deg, var(--navy-deeper) 0%, var(--navy) 60%, #1e3a6e 100%)',
+      borderBottom: '1px solid rgba(38,168,61,0.25)',
+      padding: '14px 16px',
       position: 'sticky',
       top: 0,
       zIndex: 100,
+      boxShadow: '0 2px 20px rgba(0,0,0,0.4)',
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 7,
-              background: 'rgba(37,99,235,0.25)',
-              border: '1px solid rgba(37,99,235,0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 7 16 12 23 17z"/><rect width="15" height="14" x="1" y="5" rx="2" ry="2"/>
-              </svg>
-            </div>
-            <h1 style={{ fontSize: 15, fontWeight: 600, color: '#e8eaf0', letterSpacing: 0.2 }}>
-              Nuel Tech Camera Database
-            </h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        {/* Logo + Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 10, overflow: 'hidden',
+            background: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            padding: 3,
+          }}>
+            <img
+              src="/logo.svg"
+              alt="Nuel Tech Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           </div>
-          <p style={{ fontSize: 11, color: '#4a6fa5', letterSpacing: 0.3, paddingLeft: 36 }}>
-            Nuel Technologies and Engineering Limited
-          </p>
+          <div>
+            <h1 style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: '#fff',
+              letterSpacing: 0.3,
+              lineHeight: 1.2,
+            }}>
+              Camera Database
+            </h1>
+            <p style={{
+              fontSize: 11,
+              color: 'rgba(38,168,61,0.9)',
+              letterSpacing: 0.2,
+              marginTop: 1,
+              fontWeight: 500,
+            }}>
+              Nuel Technologies & Engineering Ltd
+            </p>
+          </div>
         </div>
+
+        {/* Count badge */}
         <div style={{
-          background: 'rgba(37,99,235,0.15)',
-          border: '1px solid rgba(37,99,235,0.25)',
+          background: 'rgba(38,168,61,0.15)',
+          border: '1px solid rgba(38,168,61,0.35)',
           borderRadius: 20,
-          padding: '3px 10px',
+          padding: '4px 12px',
           fontSize: 12,
-          color: '#60a5fa',
-          fontWeight: 500,
+          color: '#4ade6e',
+          fontWeight: 600,
           whiteSpace: 'nowrap',
-          marginTop: 2,
+          letterSpacing: 0.2,
         }}>
           {count} {count === 1 ? 'client' : 'clients'}
         </div>
