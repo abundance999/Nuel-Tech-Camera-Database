@@ -67,16 +67,36 @@
   --mono:          'Space Mono', monospace;
 }
 
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #090b17;
+  --bg2: #0f172a;
+  --bg3: #111827;
+  --bg4: #181c2b;
+  --bg5: #202536;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #cbd5e1;
+  --border: rgba(148,163,184,0.16);
+  --border2: rgba(148,163,184,0.28);
+  --accent: #60a5fa;
+  --accent2: #38bdf8;
+  --accent-soft: rgba(96,165,250,0.12);
+  --accent-glow: rgba(96,165,250,0.24);
+  --green: #60a5fa;
+  --green-dark: #3b82f6;
+}
+
 html {
   font-size: 16px;
   scroll-behavior: smooth;
-  background: #fff;
+  background: var(--bg);
 }
 
 body {
   font-family: var(--font);
-  background: #fff;
-  color: #111;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

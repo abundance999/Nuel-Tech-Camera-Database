@@ -43,6 +43,12 @@ export default function App() {
   const [adminEmails, setAdminEmails] = useState([])
   const [adminLoading, setAdminLoading] = useState(true)
   const [adminConfigured, setAdminConfigured] = useState(null)
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') || 'light'
+    }
+    return 'light'
+  })
 
   const isAdmin = Boolean(
     user && (
@@ -99,6 +105,12 @@ export default function App() {
     }
     loadAdmins()
   }, [fetchAdminEmails])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
 
   useEffect(() => {
     const syncSession = async () => {
@@ -387,7 +399,36 @@ export default function App() {
       </div>
 
       {(mode === 'public' || isAdmin) && (
-        <FAB onClick={() => { setEditingClient(null); setModalOpen(true) }} />
+        <>
+          <button
+            onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle night mode"
+            style={{
+              position: 'fixed',
+              right: 24,
+              bottom: 96,
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              border: '1px solid var(--border2)',
+              background: 'var(--bg2)',
+              color: 'var(--text)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              zIndex: 210,
+            }}
+          >
+            {theme === 'dark' ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            )}
+          </button>
+          <FAB onClick={() => { setEditingClient(null); setModalOpen(true) }} />
+        </>
       )}
 
       {modalOpen && (
