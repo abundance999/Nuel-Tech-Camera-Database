@@ -1,23 +1,23 @@
 export default function Header({ count }) {
   return (
     <header style={{
-      background: 'linear-gradient(135deg, var(--navy-deeper) 0%, var(--navy) 60%, #1e3a6e 100%)',
+      background: 'linear-gradient(135deg, var(--navy-deeper) 0%, var(--navy) 60%, var(--navy-mid) 100%)',
       borderBottom: '1px solid rgba(38,168,61,0.25)',
       padding: '14px 16px',
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      boxShadow: '0 2px 20px rgba(0,0,0,0.4)',
+      boxShadow: 'var(--shadow)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         {/* Logo + Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 40, height: 40, borderRadius: 10, overflow: 'hidden',
-            background: '#fff',
+            background: 'var(--logo-bg)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            boxShadow: 'var(--shadow-soft)',
             padding: 3,
           }}>
             <img
@@ -50,12 +50,12 @@ export default function Header({ count }) {
 
         {/* Count badge */}
         <div style={{
-          background: 'rgba(38,168,61,0.15)',
+          background: 'var(--badge-bg)',
           border: '1px solid rgba(38,168,61,0.35)',
           borderRadius: 20,
           padding: '4px 12px',
           fontSize: 12,
-          color: '#4ade6e',
+          color: 'var(--accent)',
           fontWeight: 600,
           whiteSpace: 'nowrap',
           letterSpacing: 0.2,

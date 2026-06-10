@@ -12,7 +12,7 @@ export default function Toast({ msg, type }) {
       background: s.bg, border: `1px solid ${s.border}`, color: s.color,
       borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 600,
       zIndex: 400, whiteSpace: 'nowrap',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+      boxShadow: 'var(--shadow)',
       animation: 'slideUp 0.2s ease',
     }}>
       {msg}

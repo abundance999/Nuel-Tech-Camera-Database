@@ -325,8 +325,8 @@ export default function App() {
 
       {mode === 'admin' && isAdmin && (
         <>
-          <div style={{ padding: '10px 14px', background: 'rgba(38,168,61,0.08)', borderBottom: '1px solid rgba(38,168,61,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#4ade6e', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ padding: '10px 14px', background: 'var(--accent-soft)', borderBottom: '1px solid var(--accent-soft)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               Signed in as admin
             </span>
@@ -348,8 +348,8 @@ export default function App() {
         {mode === 'admin' && !isAdmin ? (
           <div style={{ padding: 20, background: 'var(--bg2)', borderRadius: 16, border: '1px solid var(--border)', margin: '0' }}>
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(34,47,89,0.6)', border: '1px solid rgba(34,47,89,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7aa4f0" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <div style={{ width: 52, height: 52, borderRadius: 14, background: 'var(--navy-soft)', border: '1px solid var(--navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               </div>
               <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Admin Sign In</h2>
               <p style={{ fontSize: 13, color: 'var(--text3)' }}>Enter your credentials to access the full dashboard.</p>

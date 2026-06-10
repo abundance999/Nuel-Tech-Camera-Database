@@ -54,11 +54,11 @@ export default function ClientCard({ client, onEdit, onDelete, isAdmin }) {
   return (
     <div style={{
       background: 'var(--bg2)',
-      border: open ? '1px solid rgba(38,168,61,0.3)' : '1px solid var(--border)',
+      border: open ? '1px solid var(--accent-soft)' : '1px solid var(--border)',
       borderRadius: 'var(--radius-lg)',
       marginBottom: 10,
       overflow: 'hidden',
-      boxShadow: open ? '0 4px 20px rgba(38,168,61,0.08)' : '0 1px 4px rgba(0,0,0,0.2)',
+      boxShadow: open ? 'var(--shadow-strong)' : 'var(--shadow-soft)',
     }}>
       {/* Card Header */}
       <div
