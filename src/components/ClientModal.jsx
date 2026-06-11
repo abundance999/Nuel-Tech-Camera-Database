@@ -50,6 +50,7 @@ const NETWORK_COLORS = {
   Airtel: { bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.3)',  color: '#f87171' },
   Glo:    { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.3)', color: '#34d399' },
 }
+const MEMORY_CARD_SIZES = ['128GB', '64GB', '32GB']
 
 function AddMoreBtn({ onClick, label }) {
   return (
@@ -154,7 +155,8 @@ function SimRow({ sim, index, onChange, onRemove, showRemove }) {
 }
 
 const EMPTY_SIM = () => ({ number: '', network: '' })
-const EMPTY = { date: '', name: '', contact: '', location: '', cameras: '', system: '', subscription: '', username: '', password: '' }
+
+const EMPTY = { date: '', name: '', contact: '', location: '', cameras: '', system: '', subscription: '', username: '', password: '', memory_card_size: '', is_complete: false }
 
 export default function ClientModal({ client, onClose, onSave, isAdmin }) {
   const [form, setForm] = useState(() => client ? {
@@ -167,6 +169,8 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
     subscription: client.subscription || '',
     username: client.username || '',
     password: client.password || '',
+    memory_card_size: client.memory_card_size || '',
+    is_complete: Boolean(client.is_complete ?? true),
   } : { ...EMPTY, date: new Date().toISOString().split('T')[0] })
   const [installers, setInstallers] = useState(() => {
     if (client) {
@@ -179,10 +183,10 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
   const [sims, setSims] = useState(() => client ? (
     Array.isArray(client.sims) && client.sims.length > 0 ? client.sims : [EMPTY_SIM()]
   ) : [EMPTY_SIM()])
-  const [saving, setSaving] = useState(false)
   const publicAdd = !isAdmin && !client
-  const canEditName = isAdmin
-  const canEditContact = isAdmin
+  const canEditContact = isAdmin || !client
+  const [saving, setSaving] = useState(false)
+  const canEditName = isAdmin  // Only admin can edit name
   const canEditCredentials = isAdmin || !client
   const [error, setError] = useState('')
   const [mounted, setMounted] = useState(false)
@@ -192,6 +196,13 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
     requestAnimationFrame(() => setMounted(true))
     return () => setMounted(false)
   }, [])
+
+  // Auto-complete when both name and contact are provided
+  useEffect(() => {
+    if (isAdmin && form.name.trim() && form.contact.trim()) {
+      setForm(f => ({ ...f, is_complete: true }))
+    }
+  }, [form.name, form.contact, isAdmin])
 
   const closeModal = () => {
     if (exiting) return
@@ -224,12 +235,17 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
     if (!cleanSims.length) { setError('At least one SIM card entry is required.'); return }
     setError('')
     setSaving(true)
+    
+    // Mark as complete if name and contact are both provided
+    const hasNameAndContact = form.name.trim() && form.contact.trim()
+    
     const success = await onSave({
       ...form,
+      is_complete: hasNameAndContact ? true : Boolean(form.is_complete),
       name: form.name.trim(),
       location: form.location.trim(),
-      cameras: form.cameras ? parseInt(form.cameras) : null,
-      subscription: form.subscription ? parseFloat(form.subscription) : null,
+      cameras: form.cameras && form.cameras.toString().trim() ? parseInt(form.cameras) : null,
+      subscription: form.subscription && form.subscription.toString().trim() ? parseFloat(form.subscription) : null,
       installers: cleanInstallers,
       sims: cleanSims,
     })
@@ -328,11 +344,57 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
             </Field>
           </div>
 
+          <Field label="Memory card size">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
+              {MEMORY_CARD_SIZES.map(size => {
+                const active = form.memory_card_size === size
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, memory_card_size: active ? '' : size }))}
+                    style={{
+                      minWidth: 80,
+                      padding: '10px 12px',
+                      borderRadius: 10,
+                      border: active ? '1px solid var(--accent)' : '1px solid var(--border2)',
+                      background: active ? 'var(--accent-soft)' : 'var(--bg4)',
+                      color: active ? 'var(--accent)' : 'var(--text)',
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font)',
+                      fontWeight: active ? 600 : 500,
+                      transition: 'background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease',
+                    }}
+                  >
+                    {size}
+                  </button>
+                )
+              })}
+            </div>
+          </Field>
+
           {isAdmin && (
             <Field label="Subscription amount">
               <Input type="number" placeholder="e.g. 25000" value={form.subscription} onChange={set('subscription')} min="0" />
             </Field>
           )}
+
+            {isAdmin && (
+              <Field label="Status">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={form.is_complete}
+                    onChange={e => setForm(f => ({ ...f, is_complete: e.target.checked }))}
+                    style={{ width: 16, height: 16, cursor: 'pointer' }}
+                  />
+                  <label style={{ fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}>
+                    Record is complete
+                  </label>
+                </div>
+              </Field>
+            )}
 
           {/* Installers */}
           <div style={{ marginBottom: 14 }}>

@@ -5,7 +5,9 @@ import SearchBar from './components/SearchBar'
 import TabBar from './components/TabBar'
 import ClientList from './components/ClientList'
 import StatsView from './components/StatsView'
+import SubscriptionsView from './components/SubscriptionsView'
 import ClientModal from './components/ClientModal'
+import SubscriptionModal from './components/SubscriptionModal'
 import AdminManager from './components/AdminManager'
 import FAB from './components/FAB'
 import Toast from './components/Toast'
@@ -34,11 +36,16 @@ export default function App() {
     return 'public'
   })
   const [modalOpen, setModalOpen] = useState(false)
+  const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false)
+  const [adminModalOpen, setAdminModalOpen] = useState(false)
   const [editingClient, setEditingClient] = useState(null)
+  const [subscriptionRefresh, setSubscriptionRefresh] = useState(0)
   const [toast, setToast] = useState(null)
   const [user, setUser] = useState(null)
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [authMode, setAuthMode] = useState('signin')
   const [loginError, setLoginError] = useState('')
   const [adminEmails, setAdminEmails] = useState([])
   const [adminLoading, setAdminLoading] = useState(true)
@@ -189,8 +196,46 @@ export default function App() {
     setUser(signedInUser)
     setLoginEmail('')
     setLoginPassword('')
+    setConfirmPassword('')
     setMode('admin')
     showToast('Signed in as admin')
+  }
+
+  const handleAdminSignUp = async () => {
+    setLoginError('')
+
+    if (!loginEmail.trim() || !loginPassword || !confirmPassword) {
+      setLoginError('Please fill in all sign-up fields.')
+      return
+    }
+    if (loginPassword !== confirmPassword) {
+      setLoginError('Passwords do not match.')
+      return
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: loginEmail,
+      password: loginPassword,
+    })
+
+    if (error) {
+      setLoginError(error.message || 'Sign up failed')
+      return
+    }
+
+    const email = loginEmail.trim().toLowerCase()
+    if (adminConfigured === false && email) {
+      const { error: insertError } = await supabase.from('admin_users').insert([{ email }])
+      if (!insertError) {
+        setAdminEmails([email])
+        setAdminConfigured(true)
+      }
+    }
+
+    setAuthMode('signin')
+    setLoginPassword('')
+    setConfirmPassword('')
+    showToast('Account created. Please check your email and sign in.')
   }
 
   const handleSignOut = async () => {
@@ -204,27 +249,89 @@ export default function App() {
     const payload = { ...formData }
 
     if (!isAdmin) {
-      delete payload.name
-      delete payload.contact
+      if (!editingClient) {
+        payload.name = payload.name ?? ''
+        payload.contact = payload.contact ?? ''
+      }
+      delete payload.is_complete
       if (editingClient) {
         delete payload.username
         delete payload.password
       }
     }
 
-    if (editingClient) {
-      const { error } = await supabase
-        .from('clients')
-        .update(payload)
-        .eq('id', editingClient.id)
-      if (error) { showToast('Failed to update', 'error'); return false }
-      showToast('Client updated')
-    } else {
-      const { error } = await supabase.from('clients').insert([payload])
-      if (error) { showToast('Failed to save', 'error'); return false }
-      showToast('Client added')
+    // Remove empty memory_card_size
+    if (!payload.memory_card_size) {
+      delete payload.memory_card_size
     }
 
+    // For admin users, ensure is_complete is a proper boolean
+    if (isAdmin && payload.is_complete !== undefined) {
+      payload.is_complete = Boolean(payload.is_complete)
+    } else if (isAdmin && (payload.is_complete === undefined || payload.is_complete === null)) {
+      payload.is_complete = true
+    }
+
+    const performSave = async (currentPayload) => {
+      if (editingClient) {
+        return supabase
+          .from('clients')
+          .update(currentPayload)
+          .eq('id', editingClient.id)
+      }
+      return supabase.from('clients').insert([currentPayload])
+    }
+
+    // Debug: log payload being sent so we can verify is_complete value
+    console.log('Saving client payload:', payload)
+    showToast('Saving record — is_complete=' + String(payload.is_complete), 'info')
+
+    const saveResult = await performSave(payload)
+    let error = saveResult.error
+    const returnedData = saveResult.data
+    console.log('Save result:', saveResult)
+
+    // After saving, fetch the stored record to confirm what was persisted
+    try {
+      const clientId = editingClient ? editingClient.id : (returnedData && returnedData[0] && returnedData[0].id)
+      if (clientId) {
+        const { data: stored, error: fetchErr } = await supabase.from('clients').select('id,name,contact,is_complete').eq('id', clientId).maybeSingle()
+        console.log('Fetch verification maybeSingle result:', { stored, fetchErr })
+        if (fetchErr) {
+          // Try a second fetch using .single()
+          try {
+            const { data: stored2, error: fetchErr2 } = await supabase.from('clients').select('*').eq('id', clientId).single()
+            console.log('Fetch verification single result:', { stored2, fetchErr2 })
+            if (fetchErr2) {
+              showToast('Verify fetch error: ' + (fetchErr2.message || String(fetchErr2)), 'error')
+            } else {
+              showToast('Stored is_complete=' + String(stored2?.is_complete), 'info')
+            }
+          } catch (e) {
+            console.log('Second fetch exception:', e)
+            showToast('Verify fetch exception: ' + String(e), 'error')
+          }
+        } else {
+          showToast('Stored is_complete=' + String(stored?.is_complete) + ' raw=' + JSON.stringify(stored), 'info')
+        }
+      }
+    } catch (e) {
+      console.log('Verification error:', e)
+      showToast('Verification exception: ' + String(e), 'error')
+    }
+    if (error && /is_complete/.test(error.message || '') && /schema cache/.test(error.message || '')) {
+      const retryPayload = { ...payload }
+      delete retryPayload.is_complete
+      const retryResult = await performSave(retryPayload)
+      error = retryResult.error
+    }
+
+    if (error) {
+      showToast((editingClient ? 'Failed to update: ' : 'Failed to save: ') + (error.message || error.code || 'unknown error'), 'error')
+      return false
+    }
+
+    showToast(editingClient ? 'Client updated' : 'Client added')
     await fetchClients()
     return true
   }
@@ -238,6 +345,11 @@ export default function App() {
     if (error) { showToast('Failed to delete', 'error'); return }
     showToast('Record deleted', 'info')
     await fetchClients()
+  }
+
+  const handleOpenSubscriptionModal = (client) => {
+    setEditingClient(client)
+    setSubscriptionModalOpen(true)
   }
 
   const handleAddAdminEmail = async (email) => {
@@ -283,6 +395,7 @@ export default function App() {
       (c.system || '').toLowerCase().includes(q) ||
       (c.contact || '').toLowerCase().includes(q) ||
       simMatch
+
     )
   })
 
@@ -332,17 +445,40 @@ export default function App() {
             </span>
             <button onClick={handleSignOut} style={{ background: 'none', border: '1px solid var(--border2)', borderRadius: 8, padding: '6px 12px', color: 'var(--text2)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12 }}>Sign Out</button>
           </div>
-          <AdminManager
-            admins={adminEmails}
-            loading={adminLoading}
-            onAdd={handleAddAdminEmail}
-            onRemove={handleRemoveAdminEmail}
-          />
         </>
       )}
 
       <SearchBar value={search} onChange={setSearch} />
-      <TabBar active={tab} onChange={setTab} />
+
+      {adminModalOpen && (
+        <div
+          onClick={e => { if (e.target === e.currentTarget) setAdminModalOpen(false) }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 220, padding: 16 }}
+        >
+          <div style={{ width: 'min(100%, 480px)', maxHeight: '90vh', overflow: 'auto', background: 'var(--bg)', borderRadius: 24, boxShadow: '0 25px 80px rgba(15, 23, 42, 0.25)', border: '1px solid rgba(255,255,255,0.08)', padding: 20, position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700 }}>Admin Management</div>
+                <div style={{ fontSize: 13, color: 'var(--text3)' }}>Manage admin access from one place.</div>
+              </div>
+              <button
+                onClick={() => setAdminModalOpen(false)}
+                style={{ border: 'none', background: 'transparent', color: 'var(--text2)', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}
+                aria-label="Close admin management"
+              >
+                ×
+              </button>
+            </div>
+            <AdminManager
+              admins={adminEmails}
+              loading={adminLoading}
+              onAdd={handleAddAdminEmail}
+              onRemove={handleRemoveAdminEmail}
+            />
+          </div>
+        </div>
+      )}
+      <TabBar active={tab} onChange={setTab} isAdmin={mode === 'admin' && isAdmin} />
 
       <div style={{ flex: 1, padding: '12px 14px 90px' }}>
         {mode === 'admin' && !isAdmin ? (
@@ -351,8 +487,12 @@ export default function App() {
               <div style={{ width: 52, height: 52, borderRadius: 14, background: 'var(--navy-soft)', border: '1px solid var(--navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               </div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Admin Sign In</h2>
-              <p style={{ fontSize: 13, color: 'var(--text3)' }}>Enter your credentials to access the full dashboard.</p>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{authMode === 'signup' ? 'Admin Sign Up' : 'Admin Sign In'}</h2>
+              <p style={{ fontSize: 13, color: 'var(--text3)' }}>
+                {authMode === 'signup'
+                  ? 'Create an account and then ask an existing admin to approve your access.'
+                  : 'Enter your credentials to access the full dashboard.'}
+              </p>
             </div>
             <div style={{ display: 'grid', gap: 12 }}>
               <input
@@ -373,33 +513,85 @@ export default function App() {
                 onFocus={e => { e.target.style.borderColor = 'rgba(38,168,61,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(38,168,61,0.1)' }}
                 onBlur={e => { e.target.style.borderColor = 'var(--border2)'; e.target.style.boxShadow = 'none' }}
               />
+              {authMode === 'signup' && (
+                <input
+                  type="password"
+                  placeholder="Confirm password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '1px solid var(--border2)', background: 'var(--bg3)', color: 'var(--text)', fontFamily: 'var(--font)', fontSize: 14, outline: 'none' }}
+                  onFocus={e => { e.target.style.borderColor = 'rgba(38,168,61,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(38,168,61,0.1)' }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border2)'; e.target.style.boxShadow = 'none' }}
+                />
+              )}
               <button
-                onClick={handleAdminSignIn}
+                onClick={authMode === 'signup' ? handleAdminSignUp : handleAdminSignIn}
                 style={{ padding: '12px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%)', color: '#fff', cursor: 'pointer', fontWeight: 700, fontFamily: 'var(--font)', fontSize: 15, boxShadow: '0 3px 12px rgba(38,168,61,0.35)' }}
               >
-                Sign In
+                {authMode === 'signup' ? 'Sign Up' : 'Sign In'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode(prev => prev === 'signin' ? 'signup' : 'signin')
+                  setLoginError('')
+                  setConfirmPassword('')
+                }}
+                style={{ padding: '12px', borderRadius: 10, border: '1px solid var(--border2)', background: 'var(--bg3)', color: 'var(--text)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 14 }}
+              >
+                {authMode === 'signup' ? 'Already have an account? Sign in' : 'Create an account'}
               </button>
               {loginError && <div style={{ color: '#f87171', fontSize: 13, textAlign: 'center', background: 'var(--red-soft)', padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(239,68,68,0.2)' }}>{loginError}</div>}
             </div>
           </div>
+        ) : tab === 'list' ? (
+          <ClientList
+            clients={filtered}
+            loading={loading}
+            searchActive={!!search.trim()}
+            onEdit={(c) => { setEditingClient(c); setModalOpen(true) }}
+            onDelete={handleDelete}
+            onAddSubscription={handleOpenSubscriptionModal}
+            subscriptionRefresh={subscriptionRefresh}
+            isAdmin={mode === 'admin' && isAdmin}
+          />
+        ) : tab === 'stats' ? (
+          <StatsView clients={clients} loading={loading} />
         ) : (
-          tab === 'list' ? (
-            <ClientList
-              clients={filtered}
-              loading={loading}
-              searchActive={!!search.trim()}
-              onEdit={(c) => { setEditingClient(c); setModalOpen(true) }}
-              onDelete={handleDelete}
-              isAdmin={mode === 'admin' && isAdmin}
-            />
-          ) : (
-            <StatsView clients={clients} loading={loading} />
-          )
+          <SubscriptionsView isAdmin={mode === 'admin' && isAdmin} />
         )}
       </div>
 
       {(mode === 'public' || isAdmin) && (
         <>
+          {mode === 'admin' && isAdmin && (
+            <button
+              onClick={() => setAdminModalOpen(true)}
+              aria-label="Open admin management"
+              style={{
+                position: 'fixed',
+                right: 24,
+                bottom: 152,
+                width: 44,
+                height: 44,
+                borderRadius: '50%',
+                border: '1px solid var(--border2)',
+                background: 'var(--bg2)',
+                color: 'var(--text)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                zIndex: 210,
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="8" r="3" />
+                <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+              </svg>
+            </button>
+          )}
           <button
             onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
             aria-label="Toggle night mode"
@@ -438,6 +630,19 @@ export default function App() {
           onClose={() => { setModalOpen(false); setEditingClient(null) }}
           onSave={handleSave}
           isAdmin={mode === 'admin' && isAdmin}
+        />
+      )}
+
+      {subscriptionModalOpen && editingClient && (
+        <SubscriptionModal
+          client={editingClient}
+          onClose={() => setSubscriptionModalOpen(false)}
+          onSave={() => {
+            setSubscriptionModalOpen(false)
+            setSubscriptionRefresh(prev => prev + 1)
+            setEditingClient(null)
+          }}
+          onShowToast={showToast}
         />
       )}
 

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import SubscriptionsHistory from './SubscriptionsHistory'
 
 function initials(name) {
   return (name || '?').trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
@@ -44,7 +45,7 @@ function Row({ label, value, mono, icon }) {
   )
 }
 
-export default function ClientCard({ client, onEdit, onDelete, isAdmin }) {
+export default function ClientCard({ client, onEdit, onDelete, isAdmin, onAddSubscription, subscriptionRefresh }) {
   const [open, setOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const { bg, fg } = avatarColor(client.name)
@@ -110,7 +111,19 @@ export default function ClientCard({ client, onEdit, onDelete, isAdmin }) {
             {client.cameras} cam{client.cameras > 1 ? 's' : ''}
           </span>
         )}
-        {client.system && (
+          {!client.is_complete && (
+            <span style={{
+              background: 'rgba(217,119,6,0.16)', color: '#92400e',
+              border: '1px solid rgba(217,119,6,0.3)', borderRadius: 20,
+              fontSize: 11, padding: '2px 9px', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500,
+            }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+              Incomplete
+            </span>
+          )}
+          {client.system && (
           <span style={{
             background: 'rgba(34,47,89,0.14)', color: '#1d4ed8',
             border: '1px solid rgba(34,47,89,0.45)', borderRadius: 20,
@@ -176,6 +189,11 @@ export default function ClientCard({ client, onEdit, onDelete, isAdmin }) {
           <Row label="Password" value={client.password} mono
             icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>}
           />
+          {client.memory_card_size && (
+            <Row label="Memory card" value={client.memory_card_size}
+              icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2h12l4 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/><path d="M8 8h8"/></svg>}
+            />
+          )}
 
           {/* SIM Cards */}
           {(() => {
@@ -217,8 +235,30 @@ export default function ClientCard({ client, onEdit, onDelete, isAdmin }) {
             )
           })()}
 
+          {/* Subscriptions History */}
+          {isAdmin && <SubscriptionsHistory clientId={client.id} refreshToken={subscriptionRefresh} />}
+
           {/* Actions */}
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            {isAdmin && (
+              <button
+                onClick={() => onAddSubscription?.(client)}
+                style={{
+                  flex: 1, padding: '9px', background: 'var(--accent)',
+                  border: 'none', borderRadius: 8,
+                  color: '#fff', fontSize: 13, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  fontFamily: 'var(--font)', fontWeight: 600,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = '0.9' }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="12 5 12 19"/><polyline points="5 12 19 12"/>
+                </svg>
+                Add Subscription
+              </button>
+            )}
             <button
               onClick={() => onEdit(client)}
               style={{

@@ -19,7 +19,7 @@ function Skeleton() {
   )
 }
 
-export default function ClientList({ clients, loading, searchActive, onEdit, onDelete, isAdmin }) {
+export default function ClientList({ clients, loading, searchActive, onEdit, onDelete, isAdmin, onAddSubscription, subscriptionRefresh }) {
   if (loading) {
     return <>{[1,2,3,4].map(i => <Skeleton key={i} />)}</>
   }
@@ -42,7 +42,15 @@ export default function ClientList({ clients, loading, searchActive, onEdit, onD
   return (
     <>
       {clients.map(c => (
-        <ClientCard key={c.id} client={c} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} />
+        <ClientCard
+          key={c.id}
+          client={c}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isAdmin={isAdmin}
+          onAddSubscription={onAddSubscription}
+          subscriptionRefresh={subscriptionRefresh}
+        />
       ))}
       <div style={{ height: 10 }} />
     </>

@@ -1,67 +1,61 @@
 # Nuel Tech Camera Database
 
-**Nuel Technologies and Engineering Limited**
+A mobile-first React + Vite application for logging and managing CCTV camera installations.
 
-A mobile-first web application for logging, managing, and retrieving CCTV camera installation records. Built for internal field use — any team member can add a new client, view existing records, search across all data, and update entries as needed.
+## Overview
 
----
+This project provides a field-friendly interface for adding client installation records, searching across stored entries, and viewing summary statistics. It supports both public guest usage and admin mode, with in-app admin management and a dark theme toggle.
 
 ## Features
 
-- **Add & edit client records** — log full installation details per site
-- **Multiple installers per job** — add as many technicians as needed; card summary shows the lead installer with an overflow count (e.g. `John (+2)`)
-- **Multiple SIM cards per site** — unlimited SIM entries, each with a number and network selector (MTN, Airtel, Glo)
-- **Expandable client cards** — tap any card to reveal credentials, SIM details, and full installer list
-- **Live search** — filters instantly across name, location, system type, installer, SIM number, and network
-- **Summary tab** — at-a-glance stats: total clients, total cameras installed, breakdowns by system type, installer, and SIM network
-- **Fully responsive** — designed mobile-first for use in the field
-- **Shared database** — all records are stored in Supabase and visible to every visitor in real time
-
----
-
-## Data Fields
-
-| Field | Required |
-|---|---|
-| Site Location | ✅ |
-| Type of System (DVR, NVR, IP, etc.) | ✅ |
-| Number of Cameras | ✅ |
-| Installer(s) | ✅ |
-| Username | ✅ |
-| Password | ✅ |
-| SIM Card Number + Network | ✅ |
-| Date | Optional |
-| Client Name | Optional |
-| Client Contact | Optional |
-
----
+- Public and Admin modes with separate access behavior
+- Add, edit, and delete client records
+- Public users can add records and update most fields, while name/contact and existing credentials remain protected
+- Admin users can manage all fields and delete records
+- In-app admin email management UI for adding/removing admins
+- Live search across location, system, installer, SIM number, and network
+- Expandable client cards with detailed credentials, SIM info, and memory card size
+- Summary dashboard with totals and breakdowns
+- Floating action button for quick client creation
+- Dark mode toggle with persistent preference
+- Responsive mobile-first layout
 
 ## Tech Stack
 
-- **React 18** + **Vite** — frontend framework and build tool
-- **Supabase** — PostgreSQL database with real-time sync
-- **Vanilla CSS** — no UI framework; custom dark theme with CSS variables
-
----
+- React 19
+- Vite
+- Supabase (PostgreSQL + auth)
+- Vanilla CSS with theme variables
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- A Supabase project (free tier works)
+- Node.js 18 or newer
+- Supabase project
 
-### 1. Clone and install
+### Installation
 
 ```bash
 git clone https://github.com/your-org/nuel-camera-db.git
-cd nuel-camera-db
+cd "Nuel Tech Camera DB"
 npm install
 ```
 
-### 2. Set up Supabase
+### Configure Supabase
 
-In your Supabase project's **SQL Editor**, run:
+Create a Supabase project and copy the project URL and anon key.
+
+Update `src/supabase.js` as needed:
+
+```js
+const SUPABASE_URL = 'https://your-project.supabase.co'
+const SUPABASE_ANON_KEY = 'your-anon-key'
+```
+
+### Database schema
+
+Use the following SQL in Supabase to create the `clients` table and enable row-level security:
 
 ```sql
 create table clients (
@@ -76,68 +70,72 @@ create table clients (
   installers jsonb default '[]',
   username text,
   password text,
+  subscription numeric,
+  memory_card_size text,
   sims jsonb default '[]'
 );
 
--- Enable public access (no auth required)
 alter table clients enable row level security;
-create policy "Public read"   on clients for select using (true);
+
+create policy "Public read" on clients for select using (true);
 create policy "Public insert" on clients for insert with check (true);
 create policy "Public update" on clients for update using (true);
 create policy "Public delete" on clients for delete using (true);
 ```
 
-### 3. Configure credentials
-
-Open `src/supabase.js` and replace the values if needed:
-
-```js
-const SUPABASE_URL = 'https://your-project.supabase.co'
-const SUPABASE_ANON_KEY = 'your-anon-key'
-```
-
-### 4. Run locally
+### Run locally
 
 ```bash
 npm run dev
 ```
 
-### 5. Build for production
+### Build for production
 
 ```bash
 npm run build
 ```
 
-The output is in the `dist/` folder — deploy it anywhere.
+Preview the production build:
 
----
+```bash
+npm run preview
+```
+
+## Project structure
+
+- `src/App.jsx` — main app shell, mode switching, auth logic, theme state
+- `src/supabase.js` — Supabase client configuration
+- `src/components/` — reusable UI components
+- `src/index.css` — global styles and theme variables
+
+## Usage
+
+- Toggle between Public and Admin modes at the top
+- Use the floating plus button to add a new client
+- Top search filters across all client fields
+- Public users cannot edit client name/contact or existing credentials
+- Admin mode includes a dedicated admin management section
+- Dark mode is available via the floating theme button
 
 ## Deployment
 
-**Vercel (recommended)**
-1. Push the project to a GitHub repository
-2. Go to [vercel.com](https://vercel.com) → New Project → import the repo
-3. Leave all settings as default → Deploy
+Recommended options:
 
-**Netlify (instant, no account needed)**
-1. Run `npm run build`
-2. Drag the `dist/` folder onto [app.netlify.com/drop](https://app.netlify.com/drop)
+- Vercel: import repo, deploy with default settings
+- Netlify: build locally and deploy the `dist/` folder
 
----
+## Scripts
 
-## Migrating from an older version
+- `npm run dev` — start development server
+- `npm run build` — build production files
+- `npm run preview` — preview the production build
+- `npm run lint` — run ESLint
 
-If you previously used a single `installer`, `sim`, or `network` column, run this migration:
+## Notes
 
-```sql
-alter table clients add column if not exists installers jsonb default '[]';
-alter table clients add column if not exists sims      jsonb default '[]';
-alter table clients drop column if exists installer;
-alter table clients drop column if exists sim;
-alter table clients drop column if exists network;
-```
-
----
+- This app is designed for internal use and field deployment
+- Admin configuration is managed in the app rather than relying on environment variables
+- Dark theme uses CSS variables and persists user preference in `localStorage`
 
 ## License
 

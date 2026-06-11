@@ -8,7 +8,42 @@ create table if not exists public.admin_users (
   email text not null unique,
   created_at timestamp with time zone default now()
 );
- 
+
+alter table public.admin_users enable row level security;
+
+drop policy if exists "Admin select admin_users" on public.admin_users;
+create policy "Admin select admin_users" on public.admin_users
+  for select
+  using (
+    auth.role() = 'authenticated'
+    AND exists (
+      select 1 from public.admin_users where admin_users.email = auth.jwt() ->> 'email'
+    )
+  );
+
+drop policy if exists "Admin insert admin_users" on public.admin_users;
+create policy "Admin insert admin_users" on public.admin_users
+  for insert
+  with check (
+    auth.role() = 'authenticated'
+    AND (
+      (select count(*) from public.admin_users) = 0
+      OR exists (
+        select 1 from public.admin_users where admin_users.email = auth.jwt() ->> 'email'
+      )
+    )
+  );
+
+drop policy if exists "Admin delete admin_users" on public.admin_users;
+create policy "Admin delete admin_users" on public.admin_users
+  for delete
+  using (
+    auth.role() = 'authenticated'
+    AND exists (
+      select 1 from public.admin_users where admin_users.email = auth.jwt() ->> 'email'
+    )
+  );
+
 alter table public.clients enable row level security;
 
 drop policy if exists "Public select clients" on public.clients;

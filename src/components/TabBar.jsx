@@ -1,4 +1,4 @@
-export default function TabBar({ active, onChange }) {
+export default function TabBar({ active, onChange, isAdmin }) {
   const tabs = [
     {
       id: 'list', label: 'All Clients',
@@ -8,6 +8,10 @@ export default function TabBar({ active, onChange }) {
       id: 'stats', label: 'Summary',
       icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
     },
+    ...(isAdmin ? [{
+      id: 'subscriptions', label: 'Subscriptions',
+      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16v10H4z"/><path d="M6 15h12M8 19h8"/></svg>
+    }] : []),
   ]
 
   return (
