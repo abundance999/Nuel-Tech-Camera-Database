@@ -24,6 +24,13 @@ const inputStyle = {
   transition: 'background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
 }
 
+function maskPhone(value, isAdmin) {
+  if (isAdmin || !value) return value
+  const str = String(value)
+  if (str.length <= 5) return '*'.repeat(str.length)
+  return str.slice(0, -5) + '*'.repeat(5)
+}
+
 function Input({ type = 'text', placeholder, value, onChange, min, disabled }) {
   return (
     <input
@@ -185,6 +192,7 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
   ) : [EMPTY_SIM()])
   const publicAdd = !isAdmin && !client
   const canEditContact = isAdmin || !client
+  const contactValue = isAdmin ? form.contact : maskPhone(form.contact, isAdmin)
   const [saving, setSaving] = useState(false)
   const canEditName = isAdmin  // Only admin can edit name
   const canEditCredentials = isAdmin || !client
@@ -319,7 +327,7 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
             <Field label="Client Contact">
               <Input
                 placeholder="Phone number or email"
-                value={form.contact}
+                value={contactValue}
                 onChange={set('contact')}
                 disabled={!canEditContact}
               />

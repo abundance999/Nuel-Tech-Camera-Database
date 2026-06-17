@@ -24,6 +24,13 @@ function avatarColor(name) {
   return AVATAR_PALETTE[i]
 }
 
+function maskPhone(value, isAdmin) {
+  if (isAdmin || !value) return value
+  const str = String(value)
+  if (str.length <= 5) return '*'.repeat(str.length)
+  return str.slice(0, -5) + '*'.repeat(5)
+}
+
 function Row({ label, value, mono, icon }) {
   return (
     <div style={{
@@ -161,11 +168,9 @@ export default function ClientCard({ client, onEdit, onDelete, isAdmin, onAddSub
         overflow: 'hidden',
       }}>
         <div style={{ display: open ? 'block' : 'none' }}>
-          {isAdmin && (
-            <Row label="Contact" value={client.contact}
-              icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.7 12.28 19.79 19.79 0 0 1 1.65 3.7 2 2 0 0 1 3.62 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.06a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 16.5z"/></svg>}
-            />
-          )}
+          <Row label="Contact" value={maskPhone(client.contact, isAdmin)}
+            icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.7 12.28 19.79 19.79 0 0 1 1.65 3.7 2 2 0 0 1 3.62 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.06a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 16.5z"/></svg>}
+          />
 
           {/* Installers */}
           {(() => {
