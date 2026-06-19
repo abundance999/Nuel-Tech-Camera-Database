@@ -236,7 +236,6 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
     if (!form.cameras) { setError('Number of cameras is required.'); return }
     if (!form.location.trim()) { setError('Site location is required.'); return }
     const cleanInstallers = installers.filter(v => v.trim())
-    if (!cleanInstallers.length) { setError('At least one installer is required.'); return }
     if (!form.username.trim()) { setError('Username is required.'); return }
     if (!form.password.trim()) { setError('Password is required.'); return }
     const cleanSims = sims.filter(s => s.number.trim() || s.network)
@@ -408,7 +407,7 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <label style={{ fontSize: 12, color: 'var(--text2)' }}>
-                Installers <span style={{ color: '#f87171' }}>*</span>
+                Installers
               </label>
               <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--mono)' }}>
                 {installers.length} person{installers.length !== 1 ? 's' : ''}
