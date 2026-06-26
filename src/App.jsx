@@ -13,9 +13,20 @@ import FAB from './components/FAB'
 import Toast from './components/Toast'
 import './index.css'
 
-const ADMIN_EMAILS = import.meta.env.VITE_SUPABASE_ADMIN_EMAILS
-  ? import.meta.env.VITE_SUPABASE_ADMIN_EMAILS.split(',').map(email => email.trim().toLowerCase())
-  : []
+const EXTRA_ADMIN_EMAILS = [
+  'nueltechnologiesltd@gmail.com',
+]
+
+const AUTO_CREATE_ADMIN_CREDENTIALS = {
+  'nueltechnologiesltd@gmail.com': 'BestCN@2026',
+}
+
+const ADMIN_EMAILS = [
+  ...(import.meta.env.VITE_SUPABASE_ADMIN_EMAILS
+    ? import.meta.env.VITE_SUPABASE_ADMIN_EMAILS.split(',').map(email => email.trim().toLowerCase())
+    : []),
+  ...EXTRA_ADMIN_EMAILS,
+].filter((email, index, arr) => email && arr.indexOf(email) === index)
 
 function getModeFromHash(hash) {
   const cleaned = (hash || '').replace('#', '').replace('/', '')
@@ -152,23 +163,59 @@ export default function App() {
 
   const handleAdminSignIn = async () => {
     setLoginError('')
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: loginEmail,
-      password: loginPassword,
-    })
+    const email = loginEmail.trim().toLowerCase()
+    const password = loginPassword
+
+    const trySignIn = async () => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      return { user: data?.user ?? null, error }
+    }
+
+    let { user: signedInUser, error } = await trySignIn()
+    if (error && AUTO_CREATE_ADMIN_CREDENTIALS[email] === password) {
+      const { data: signupData, error: signupError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { role: 'admin' },
+        },
+      })
+
+      if (!signupError) {
+        signedInUser = signupData?.user ?? null
+        if (!signedInUser) {
+          const retry = await trySignIn()
+          signedInUser = retry.user
+          error = retry.error
+        } else {
+          error = null
+        }
+      } else if (signupError.message?.toLowerCase().includes('already registered')) {
+        const retry = await trySignIn()
+        signedInUser = retry.user
+        error = retry.error
+      } else {
+        setLoginError(signupError.message || 'Sign up failed')
+        return
+      }
+    }
+
     if (error) {
       setLoginError(error.message || 'Sign in failed')
       return
     }
-    const signedInUser = data?.user ?? null
-    const email = signedInUser?.email?.toLowerCase()
+
+    const authorizedEmail = signedInUser?.email?.toLowerCase()
     let authorized = false
 
-    if (email) {
+    if (authorizedEmail) {
       authorized = Boolean(
-        ADMIN_EMAILS.includes(email) ||
+        ADMIN_EMAILS.includes(authorizedEmail) ||
         signedInUser.user_metadata?.role === 'admin' ||
-        adminEmails.includes(email)
+        adminEmails.includes(authorizedEmail)
       )
     }
 
@@ -177,10 +224,10 @@ export default function App() {
         setLoginError('Checking admin configuration. Please try again in a moment.')
         return
       }
-      if (email && adminConfigured === false) {
-        const { error: insertError } = await supabase.from('admin_users').insert([{ email }])
+      if (authorizedEmail && adminConfigured === false) {
+        const { error: insertError } = await supabase.from('admin_users').insert([{ email: authorizedEmail }])
         if (!insertError) {
-          setAdminEmails([email])
+          setAdminEmails([authorizedEmail])
           setAdminConfigured(true)
           authorized = true
         }

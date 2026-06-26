@@ -223,14 +223,21 @@ export default function ClientCard({ client, onEdit, onDelete, isAdmin, onAddSub
                     {simList.map((s, i) => {
                       const nc = netColors[s.network]
                       return (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg4)', borderRadius: 8, padding: '6px 10px' }}>
-                          <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--mono)', marginRight: 8, flexShrink: 0 }}>SIM {i + 1}</span>
-                          <span style={{ fontFamily: 'var(--mono)', fontSize: 12, flex: 1, color: s.number ? 'var(--text)' : 'var(--text3)' }}>{s.number || '—'}</span>
-                          {s.network && nc && (
-                            <span style={{ background: nc.bg, color: nc.color, border: `1px solid ${nc.border}`, borderRadius: 12, fontSize: 11, padding: '1px 8px', marginLeft: 6, flexShrink: 0, fontWeight: 600 }}>
-                              {s.network}
-                            </span>
-                          )}
+                        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4, background: 'var(--bg4)', borderRadius: 8, padding: '6px 10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--mono)', marginRight: 8, flexShrink: 0 }}>SIM {i + 1}</span>
+                            <span style={{ fontFamily: 'var(--mono)', fontSize: 12, flex: 1, color: s.number ? 'var(--text)' : 'var(--text3)', minWidth: 0 }}>{s.number || '—'}</span>
+                            {s.network && nc && (
+                              <span style={{ background: nc.bg, color: nc.color, border: `1px solid ${nc.border}`, borderRadius: 12, fontSize: 11, padding: '1px 8px', marginLeft: 6, flexShrink: 0, fontWeight: 600 }}>
+                                {s.network}
+                              </span>
+                            )}
+                          </div>
+                          {s.notes ? (
+                            <div style={{ fontSize: 12, color: 'var(--text3)', lineHeight: 1.4, whiteSpace: 'pre-wrap', paddingLeft: 2 }}>
+                              {s.notes}
+                            </div>
+                          ) : null}
                         </div>
                       )
                     })}

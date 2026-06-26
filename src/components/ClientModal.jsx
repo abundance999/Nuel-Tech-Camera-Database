@@ -157,11 +157,25 @@ function SimRow({ sim, index, onChange, onRemove, showRemove }) {
           )
         })}
       </div>
+      <textarea
+        placeholder="SIM notes (optional)"
+        value={sim.notes || ''}
+        onChange={e => onChange(index, 'notes', e.target.value)}
+        style={{
+          width: '100%', minHeight: 64, marginTop: 9,
+          background: 'var(--bg3)', border: '1px solid var(--border2)', borderRadius: 8,
+          padding: '10px 12px', fontSize: 14, color: 'var(--text)',
+          outline: 'none', fontFamily: 'var(--font)', transition: 'background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease',
+          resize: 'vertical', lineHeight: 1.5,
+        }}
+        onFocus={e => e.target.style.borderColor = 'rgba(37,99,235,0.5)'}
+        onBlur={e => e.target.style.borderColor = 'var(--border2)'}
+      />
     </div>
   )
 }
 
-const EMPTY_SIM = () => ({ number: '', network: '' })
+const EMPTY_SIM = () => ({ number: '', network: '', notes: '' })
 
 const EMPTY = { date: '', name: '', contact: '', location: '', cameras: '', system: '', subscription: '', username: '', password: '', memory_card_size: '', is_complete: false }
 
@@ -234,7 +248,7 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
   const handleSubmit = async () => {
     if (!form.system.trim()) { setError('Type of system is required.'); return }
     if (!form.cameras) { setError('Number of cameras is required.'); return }
-    if (!form.location.trim()) { setError('Site location is required.'); return }
+    if (!form.location.trim()) { setError('Camera location is required.'); return }
     const cleanInstallers = installers.filter(v => v.trim())
     if (!form.username.trim()) { setError('Username is required.'); return }
     if (!form.password.trim()) { setError('Password is required.'); return }
@@ -338,7 +352,7 @@ export default function ClientModal({ client, onClose, onSave, isAdmin }) {
             <p style={{ fontSize: 11, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10, fontWeight: 500 }}>Installation Details <span style={{ color: '#f87171' }}>*</span></p>
           </div>
 
-          <Field label="Site Location" required>
+          <Field label="Camera location" required>
             <Input placeholder="Address or area" value={form.location} onChange={set('location')} />
           </Field>
 
